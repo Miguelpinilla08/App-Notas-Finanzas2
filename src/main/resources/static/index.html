@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Notas</title>
+    <style>
+        body {font-family: Arial, sans-serif}
+        .nota {border: 1px solid #ddd; padding: 10px; margin: 10px 0; }
+        .titulo { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Mis Notas</h1>
+
+    <form id="form-nota" onsubmit="crearNota(event)">
+        <label for="titulo">Título:</label>
+        <input type="text" id="titulo" required>
+        <br>
+        <label for="contenido">Contenido:</label>
+        <textarea id="contenido" required></textarea>
+        <br>
+        <button type="submit">Agregar Nota</button>
+    </form>
+
+    <div id="lista-notas"></div>
+
+    <script>
+        //Funcion para obtener y mostrar las notas
+
+        async function obtenerNotas() {
+        try {
+            const response = await fetch('/notas');
+            const notas = await response.json();
+
+            const listaNotas = document.getElementById('lista-notas');
+            listaNotas.innerHTML = '';
+
+            notas.forEach(nota => {
+                const notaDiv = document.createElement('div');
+                notaDiv.className = 'nota';
+
+                const titulo = document.createElement('div');
+                titulo.className = 'titulo';
+                titulo.textContent = nota.titulo;
+
+                const contenido = document.createElement('div');
+                contenido.textContent = nota.contenido;
+
+                notaDiv.appendChild(titulo);
+                notaDiv.appendChild(contenido);
+
+                listaNotas.appendChild(notaDiv);
+        });
+    } catch (error) {
+        console.error("Error al obtener nota", error);
+        }
+    }
+
+    async function crearNota(event) {
+        event.preventDefault();
+
+        const titulo = document.getElementById('titulo').value;
+        const contenido = document.getElementById('contenido').value;
+
+        try{
+            const response = await fetch('/notas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ titulo: titulo, contenido: contenido }) 
+                });
+
+            if(response.OK){
+                obtenerNotas();
+
+                document.getElementById('form-nota').reset();
+            }else{
+                console.error("Error al crear nota no response OKs");
+            }
+        }
+        catch (error){
+            console.error("Error al crear solicitud:", error);
+        }
+    }
+    obtenerNotas();
+    </script>
+</body>
+</html>
